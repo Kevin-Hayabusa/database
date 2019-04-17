@@ -23,13 +23,25 @@ class Database_hdf5(object):
     def download_daily_data(self,tickers,start_date,end_date,fields):
 
         data = self.bbg.bdh(tickers,fields,start_date,end_date, periodselection='DAILY')
-        data.index.name='date'
-        data = data.stack(level=0)
+        #Check whether it is empty dataframe
+        if data.empty:
+            print("no data return!")
+        else:
+            data = data.stack(level=0)
+            if len(fields)==1:
+                data = data.to_frame()
+                data.columns=fields
+            elif type(fields)==str:
+                data = data.to_frame()
+                data.columns=[fields]
+            
+        data.index.names=['date','ticker']
+        data.columns.name='field'
         return data
     def write_daily_data(self,daily_data,path,file_name,group_name):
         daily_data = daily_data.unstack().stack(level=0)
+
         with pd.HDFStore(os.path.join(path,file_name),mode='a') as store:
-        
             tables = dict(list(daily_data.groupby(['field']))) #store into tables by fields
             for key,values in tables.items():
                 df = values.droplevel(level=1)
@@ -56,6 +68,9 @@ class Database_hdf5(object):
         merged_data = merged_data.unstack().stack(level=0)
         merged_data.columns.name = 'field'
         self.write_daily_data(merged_data,path,file_name,group_name)
+    def add_fields(self,new_fields,path,file_name,group_name):
+        new_data = self.download_daily_data(self.tickers,self.start_date,self.end_date,new_fields)
+        db.write_daily_data(new_data,path,file_name,group_name)
         
 def updatePrice(db):
     
