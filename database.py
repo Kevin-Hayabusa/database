@@ -11,8 +11,7 @@ class Database_hdf5(object):
     def __init__(self):
         '''initialize configurations'''
 
-        self.bbg = pybbg.Pybbg()
-        self.bbg.service_refData()
+
         self.path = r'C:\Users\Kevin\OneDrive - The Chinese University of Hong Kong\Documents\Quant Trading\Database\hdf5_db'
         self.factor_file_name ='factors.h5'
         self.price_file_name = 'prices.h5'
@@ -28,7 +27,8 @@ class Database_hdf5(object):
         return list(data['Ticker'])
     
     def download_daily_data(self,tickers,start_date,end_date,fields):
-
+        self.bbg = pybbg.Pybbg()
+        self.bbg.service_refData()
         data = self.bbg.bdh(tickers,fields,start_date,end_date, periodselection='DAILY')
         #Check whether it is empty dataframe
         if data.empty:
@@ -86,7 +86,10 @@ class Database_hdf5(object):
                     print(f"ticker {t} not found")
         
         df = pd.concat(data,axis=1)
-        df.columns.set_names('ticker',level=0,inplace=True)
+        if len(fields)==0 or type(fields)==str:
+            df.columns.set_names('ticker',inplace=True)
+        else:
+            df.columns.set_names('ticker',level=0,inplace=True)
         if(len(tickers)==1):
             df=df.droplevel(0,axis=1)
         return df
@@ -114,7 +117,7 @@ def updatePrice(db):
     
 if __name__ == "__main__":
     db = Database_hdf5()
-    updatePrice(db)
+    #updatePrice(db)
     #db.add_tickers(['700 HK Equity'],db.path,db.file_name,db.group_name,['PX_OPEN', 'PX_HIGH'])
 
 
