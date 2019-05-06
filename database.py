@@ -65,7 +65,7 @@ class Database_hdf5(object):
                 store.put('/'+group_name+'/'+key,df,data_columns=True)
                 #store.put(os.path.join(group_name,key),tables[key],data_columns=True)
             
-    def read_factor_data(self,path,file_name,group_name,fields):
+    def get_factor_data(self,path,file_name,group_name,fields):
         data ={}
         #store = pd.HDFStore(os.path.join(path,file_name))
         with pd.HDFStore(os.path.join(path,file_name),mode='r') as store:
