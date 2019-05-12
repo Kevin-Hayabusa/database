@@ -65,7 +65,7 @@ class Database_hdf5(object):
                 store.put('/'+group_name+'/'+key,df,data_columns=True)
                 #store.put(os.path.join(group_name,key),tables[key],data_columns=True)
             
-    def get_factor_data(self,path,file_name,group_name,fields):
+    def get_factor_data(self,path,file_name,group_name,start_date,end_date,fields):
         data ={}
         #store = pd.HDFStore(os.path.join(path,file_name))
         with pd.HDFStore(os.path.join(path,file_name),mode='r') as store:
@@ -75,8 +75,8 @@ class Database_hdf5(object):
         df = df.stack(level=1)
         df.columns.name='field'
         #store.close()
-        return df
-    def get_price_data(self,path,file_name,group_name,tickers,fields='PX_LAST'):
+        return df.loc[start_date:end_date]
+    def get_price_data(self,path,file_name,group_name,tickers,start_date,end_date,fields='PX_LAST'):
         data ={}
         with pd.HDFStore(os.path.join(path,file_name),mode='r') as store:
             for t in tickers:
@@ -92,7 +92,8 @@ class Database_hdf5(object):
             df.columns.set_names('ticker',level=0,inplace=True)
         if(len(tickers)==1):
             df=df.droplevel(0,axis=1)
-        return df
+        
+        return df.loc[start_date:end_date]
     
     def add_tickers(self,new_tickers,path,file_name,group_name,fields):
         '''
